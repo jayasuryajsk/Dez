@@ -1,7 +1,7 @@
 {{#if language_name}}
-Here's a file of {{language_name}} that I'm going to ask you to make an edit to.
+Here's a tender document written in {{language_name}} that I'm going to ask you to edit.
 {{else}}
-Here's a file of text that I'm going to ask you to make an edit to.
+Here's a section of a tender document that I'm going to ask you to edit.
 {{/if}}
 
 {{#if is_insert}}
@@ -27,7 +27,7 @@ Generate {{content_type}} based on the following prompt:
 {{{user_prompt}}}
 </prompt>
 
-Match the indentation in the original file in the inserted {{content_type}}, don't include any indentation on blank lines.
+Match the indentation of the original tender section in the inserted {{content_type}}, and don't include any indentation on blank lines.
 
 Immediately start with the following format with no remarks:
 
@@ -65,7 +65,7 @@ Below are the diagnostic errors visible to the user.  If the user requests probl
 
 Only make changes that are necessary to fulfill the prompt, leave everything else as-is. All surrounding {{content_type}} will be preserved.
 
-Start at the indentation level in the original file in the rewritten {{content_type}}. Don't stop until you've rewritten the entire section, even if you have no more changes to make, always write out the whole section with no unnecessary elisions.
+Start at the indentation level from the original tender section in the rewritten {{content_type}}. Don't stop until you've rewritten the entire section, even if you have no more changes to make; always write out the whole section with no unnecessary elisions.
 
 Immediately start with the following format with no remarks:
 
