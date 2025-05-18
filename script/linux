@@ -10,7 +10,19 @@ fi
 
 function finalize {
   # after packages install (curl, etc), get the rust toolchain
-  which rustup > /dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  if ! command -v rustup >/dev/null 2>&1; then
+    init_url="${RUSTUP_INIT_URL:-https://sh.rustup.rs}"
+    curl --proto '=https' --tlsv1.2 -sSf "$init_url" | sh -s -- -y
+  fi
+  if [[ -n "${RUSTUP_DIST_SERVER:-}" ]]; then
+    export RUSTUP_DIST_SERVER
+    export RUSTUP_UPDATE_ROOT="$RUSTUP_DIST_SERVER"
+  fi
+  toolchain="$(grep -Po '(?<=channel = ")([^"]*)' rust-toolchain.toml)"
+  if ! rustup toolchain list | grep -q "$toolchain"; then
+    rustup toolchain install "$toolchain" \
+      --profile minimal --component rustfmt,clippy
+  fi
   # verify the mold situation
   if ! command -v mold >/dev/null 2>&1; then
     echo "Warning: Mold binaries are unavailable on your system." >&2

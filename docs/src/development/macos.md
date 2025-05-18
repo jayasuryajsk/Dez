@@ -7,6 +7,8 @@ Clone down the [Zed repository](https://github.com/zed-industries/zed).
 ## Dependencies
 
 - Install [rustup](https://www.rust-lang.org/tools/install)
+  (or use a cached mirror by setting `RUSTUP_INIT_URL` and
+  `RUSTUP_DIST_SERVER` before running `script/bootstrap`)
 
 - Install [Xcode](https://apps.apple.com/us/app/xcode/id497799835?mt=12) from the macOS App Store, or from the [Apple Developer](https://developer.apple.com/download/all/) website. Note this requires a developer account.
 

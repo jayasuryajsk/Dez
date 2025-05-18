@@ -14,6 +14,11 @@ Clone down the [Zed repository](https://github.com/zed-industries/zed).
   script/linux
   ```
 
+  If your environment restricts external network access, configure
+  `RUSTUP_INIT_URL` and `RUSTUP_DIST_SERVER` to point to your internal
+  mirror before running the script. This allows the Rust toolchain to be
+  installed without contacting the public servers.
+
   If you prefer to install the system libraries manually, you can find the list of required packages in the `script/linux` file.
 
 ## Backend dependencies
