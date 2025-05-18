@@ -664,11 +664,13 @@ mod tests {
     use terminal::terminal_settings::TerminalSettings;
     use theme::ThemeSettings;
     use util::{ResultExt as _, test::TempTree};
+    use std::panic::catch_unwind;
 
     use super::*;
 
     fn init_test(executor: &BackgroundExecutor, cx: &mut TestAppContext) {
-        zlog::init();
+        // Initialize logger once; ignore if already initialized
+        let _ = catch_unwind(|| zlog::init());
         zlog::init_output_stdout();
 
         executor.allow_parking();

@@ -3,6 +3,7 @@ use anyhow::{Result, anyhow};
 use assistant_tool::outline;
 use assistant_tool::{ActionLog, Tool, ToolResult};
 use gpui::{AnyWindowHandle, App, Entity, Task};
+use gpui::AppContext;
 
 use indoc::formatdoc;
 use itertools::Itertools;
@@ -14,6 +15,9 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use ui::IconName;
 use util::markdown::MarkdownInlineCode;
+use markdownify::convert as markdownify_convert;
+use smol::unblock;
+use std::path::PathBuf;
 
 /// If the model requests to read a file whose size exceeds this, then
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
@@ -42,6 +46,10 @@ pub struct ReadFileToolInput {
     #[serde(default)]
     pub end_line: Option<u32>,
 }
+
+const READ_FILE_MARKDOWNIFY_EXTENSIONS: &[&str] = &[
+    "pdf", "docx", "odt", "pptx", "xlsx", "xls", "xlsm", "xlsb", "xla", "xlam", "ods", "csv", "zip"
+];
 
 pub struct ReadFileTool;
 
@@ -101,6 +109,24 @@ impl Tool for ReadFileTool {
 
         let file_path = input.path.clone();
         cx.spawn(async move |cx| {
+            // Resolve the absolute on-disk path for this project file via AsyncApp
+            let absolute_disk_path: PathBuf = cx
+                .read_entity(&project, |proj, app| proj.absolute_path(&project_path, app))?
+                .ok_or_else(|| anyhow!("Couldn't resolve on-disk path for '{}',", file_path))?;
+            // Check if the file should be converted via markdownify
+            if let Some(ext) = absolute_disk_path.extension().and_then(|s| s.to_str()) {
+                if READ_FILE_MARKDOWNIFY_EXTENSIONS.contains(&ext) {
+                    // Convert the document to Markdown in a background thread
+                    let path_for_convert = absolute_disk_path.clone();
+                    let markdown_text = unblock(move || {
+                        markdownify_convert(&path_for_convert, None)
+                            .map_err(|e| anyhow!("Markdownify conversion failed for {:?}: {}", path_for_convert, e))
+                    })
+                    .await?;
+                    return Ok(markdown_text.into());
+                }
+            }
+
             let buffer = cx
                 .update(|cx| {
                     project.update(cx, |project, cx| project.open_buffer(project_path, cx))

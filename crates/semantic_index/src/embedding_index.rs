@@ -17,9 +17,16 @@ use log;
 use project::{Entry, UpdatedEntriesSet, Worktree};
 use serde::{Deserialize, Serialize};
 use smol::channel;
+use smol::unblock;
+use markdownify::convert as markdownify_convert;
 use std::{cmp::Ordering, future::Future, iter, path::Path, pin::pin, sync::Arc, time::Duration};
+use std::path::PathBuf;
 use util::ResultExt;
 use worktree::Snapshot;
+
+const MARKDOWNIFY_EXTENSIONS: &[&str] = &[
+    "pdf", "docx", "odt", "pptx", "xlsx", "xls", "xlsm", "xlsb", "xla", "xlam", "ods", "csv", "zip"
+];
 
 pub struct EmbeddingIndex {
     worktree: Entity<Worktree>,
@@ -239,26 +246,54 @@ impl EmbeddingIndex {
                         cx.spawn(async {
                             while let Ok((entry, handle)) = entries.recv().await {
                                 let entry_abs_path = worktree_abs_path.join(&entry.path);
-                                if let Some(text) = fs.load(&entry_abs_path).await.ok() {
-                                    let language = language_registry
-                                        .language_for_file_path(&entry.path)
-                                        .await
-                                        .ok();
-                                    let chunked_file = ChunkedFile {
-                                        chunks: chunking::chunk_text(
-                                            &text,
-                                            language.as_ref(),
-                                            &entry.path,
-                                        ),
-                                        handle,
-                                        path: entry.path,
-                                        mtime: entry.mtime,
-                                        text,
-                                    };
-
-                                    if chunked_files_tx.send(chunked_file).await.is_err() {
-                                        return;
+                                // Clone path for markdownify conversion (separate variable)
+                                let path_for_convert = entry_abs_path.clone();
+                                // Determine extension of the file
+                                let ext = entry.path.extension().and_then(|s| s.to_str()).unwrap_or("");
+                                // Prepare text and language for chunking
+                                let (text, language) = if MARKDOWNIFY_EXTENSIONS.contains(&ext) {
+                                    // Convert document to Markdown (in background thread)
+                                    match smol::unblock(move || {
+                                        markdownify_convert(&path_for_convert, None)
+                                            .map_err(|e| anyhow!("Markdownify conversion failed for {:?}: {}", path_for_convert, e))
+                                    }).await {
+                                        Ok(markdown) => {
+                                            // Use Markdown language for chunking
+                                            let lang = language_registry
+                                                .language_for_file_path(&PathBuf::from("file.md"))
+                                                .await
+                                                .ok();
+                                            (markdown, lang)
+                                        }
+                                        Err(e) => {
+                                            // Log using original path
+                                            log::error!("Failed to convert {:?} to markdown: {}", entry_abs_path, e);
+                                            continue; // skip on conversion failure
+                                        }
                                     }
+                                } else {
+                                    // Load as plain text
+                                    match fs.load(&entry_abs_path).await.ok() {
+                                        Some(txt) => {
+                                            let lang = language_registry
+                                                .language_for_file_path(&entry.path)
+                                                .await
+                                                .ok();
+                                            (txt, lang)
+                                        }
+                                        None => continue, // skip if load fails
+                                    }
+                                };
+                                // Chunk the text
+                                let chunked_file = ChunkedFile {
+                                    chunks: chunking::chunk_text(&text, language.as_ref(), &entry.path),
+                                    handle,
+                                    path: entry.path,
+                                    mtime: entry.mtime,
+                                    text,
+                                };
+                                if chunked_files_tx.send(chunked_file).await.is_err() {
+                                    return;
                                 }
                             }
                         });

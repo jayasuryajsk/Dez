@@ -885,20 +885,35 @@ async fn restore_or_create_workspace(app_state: Arc<AppState>, cx: &mut AsyncApp
                 }
             }
         }
-    } else if matches!(KEY_VALUE_STORE.read_kvp(FIRST_OPEN), Ok(None)) {
-        cx.update(|cx| show_welcome_view(app_state, cx))?.await?;
     } else {
-        cx.update(|cx| {
-            workspace::open_new(
-                Default::default(),
-                app_state,
-                cx,
-                |workspace, window, cx| {
-                    Editor::new_file(workspace, &Default::default(), window, cx)
-                },
-            )
-        })?
-        .await?;
+        // If no paths were opened from CLI and no workspace was restored,
+        // then decide whether to show the welcome view.
+        let first_open = match GLOBAL_KEY_VALUE_STORE.read_kvp(FIRST_OPEN) {
+            Ok(Some(value_str)) => value_str == "true",
+            Ok(None) => true,
+            Err(_) => true,
+        };
+
+        if first_open {
+            let task_result = cx.update(|cx_app| {
+                show_welcome_view(app_state.clone(), cx_app)
+            });
+            if let Ok(task) = task_result {
+                task.await.log_err();
+            } else {
+                log::error!("Failed to schedule show_welcome_view (first_open branch)");
+            }
+        } else {
+            // Also show welcome view if not first_open and no workspace restored
+            let task_result = cx.update(|cx_app| {
+                show_welcome_view(app_state.clone(), cx_app)
+            });
+            if let Ok(task) = task_result {
+                task.await.log_err();
+            } else {
+                log::error!("Failed to schedule show_welcome_view (else branch)");
+            }
+        }
     }
 
     Ok(())

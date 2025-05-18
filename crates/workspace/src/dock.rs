@@ -48,15 +48,15 @@ pub trait Panel: Focusable + EventEmitter<PanelEvent> + Render + Sized {
     }
     fn set_zoomed(&mut self, _zoomed: bool, _window: &mut Window, _cx: &mut Context<Self>) {}
     fn set_active(&mut self, _active: bool, _window: &mut Window, _cx: &mut Context<Self>) {}
+    fn activation_priority(&self) -> u32;
+    fn enabled(&self, _cx: &App) -> bool {
+        true
+    }
     fn pane(&self) -> Option<Entity<Pane>> {
         None
     }
     fn remote_id() -> Option<proto::PanelId> {
         None
-    }
-    fn activation_priority(&self) -> u32;
-    fn enabled(&self, _cx: &App) -> bool {
-        true
     }
 }
 
@@ -271,7 +271,7 @@ impl Dock {
                 workspace: workspace.downgrade(),
                 panel_entries: Default::default(),
                 active_panel_index: None,
-                is_open: false,
+                is_open: matches!(position, DockPosition::Right),
                 focus_handle: focus_handle.clone(),
                 _subscriptions: [focus_subscription, zoom_subscription],
                 serialized_dock: None,

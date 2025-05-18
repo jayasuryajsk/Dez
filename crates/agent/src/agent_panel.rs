@@ -1416,6 +1416,10 @@ impl Panel for AgentPanel {
     fn enabled(&self, cx: &App) -> bool {
         AssistantSettings::get_global(cx).enabled
     }
+
+    fn starts_open(&self, _window: &Window, _cx: &App) -> bool {
+        true
+    }
 }
 
 impl AgentPanel {
