@@ -28,8 +28,8 @@ mod welcome_ui;
 actions!(welcome, [ResetHints]);
 
 pub const FIRST_OPEN: &str = "first_open";
-pub const DOCS_URL: &str = "https://zed.dev/docs/";
-const BOOK_ONBOARDING: &str = "https://dub.sh/zed-c-onboarding";
+pub const DOCS_URL: &str = "https://tenderai.com/docs/";
+const BOOK_ONBOARDING: &str = "https://tenderai.com/onboarding";
 
 pub fn init(cx: &mut App) {
     BaseKeymap::register(cx);
@@ -61,9 +61,9 @@ pub fn show_welcome_view(app_state: Arc<AppState>, cx: &mut App) -> Task<anyhow:
 
             cx.notify();
 
-            db::write_and_log(cx, || {
-                KEY_VALUE_STORE.write_kvp(FIRST_OPEN.to_string(), "false".to_string())
-            });
+            // db::write_and_log(cx, || {
+            //     KEY_VALUE_STORE.write_kvp(FIRST_OPEN.to_string(), "false".to_string())
+            // });
         },
     )
 }
@@ -112,11 +112,11 @@ impl Render for WelcomePage {
                                 h_flex()
                                     .w_full()
                                     .justify_center()
-                                    .child(Headline::new("Welcome to Zed")),
+                                    .child(Headline::new("Welcome to TenderAI")),
                             )
                             .child(
                                 h_flex().w_full().justify_center().child(
-                                    Label::new("The editor for what's next")
+                                    Label::new("The editor for your Contracts.")
                                         .color(Color::Muted)
                                         .italic(),
                                 ),
@@ -210,151 +210,55 @@ impl Render for WelcomePage {
                                     .gap_2()
                                     .child(
                                         self.section_label(cx).child(
-                                            Label::new("Resources")
+                                            Label::new("Tender Resources")
                                                 .size(LabelSize::XSmall)
                                                 .color(Color::Muted),
                                         ),
                                     )
-                                    .when(cfg!(target_os = "macos"), |el| {
-                                        el.child(
-                                            Button::new("install-cli", "Install the CLI")
-                                                .icon(IconName::Terminal)
-                                                .icon_size(IconSize::XSmall)
-                                                .icon_color(Color::Muted)
-                                                .icon_position(IconPosition::Start)
-                                                .on_click(cx.listener(|this, _, window, cx| {
-                                                    telemetry::event!("Welcome CLI Installed");
-                                                    this.workspace.update(cx, |_, cx|{
-                                                        install_cli::install_cli(window, cx);
-                                                    }).log_err();
-                                                })),
-                                        )
-                                    })
                                     .child(
-                                        Button::new("view-docs", "View Documentation")
-                                            .icon(IconName::FileCode)
+                                        Button::new("view-templates", "Browse Templates")
+                                            .icon(IconName::FileText)
                                             .icon_size(IconSize::XSmall)
                                             .icon_color(Color::Muted)
                                             .icon_position(IconPosition::Start)
                                             .on_click(cx.listener(|_, _, _, cx| {
-                                                telemetry::event!("Welcome Documentation Viewed");
-                                                cx.open_url(DOCS_URL);
+                                                telemetry::event!("Tender Templates Viewed");
+                                                cx.open_url("https://tenderai.com/templates");
                                             })),
                                     )
                                     .child(
-                                        Button::new("explore-extensions", "Explore Extensions")
-                                            .icon(IconName::Blocks)
+                                        Button::new("view-docs", "Tender Writing Guide")
+                                            .icon(IconName::Book)
                                             .icon_size(IconSize::XSmall)
                                             .icon_color(Color::Muted)
                                             .icon_position(IconPosition::Start)
-                                            .on_click(cx.listener(|_, _, window, cx| {
-                                                telemetry::event!("Welcome Extensions Page Opened");
-                                                window.dispatch_action(Box::new(
-                                                    zed_actions::Extensions::default(),
-                                                ), cx);
+                                            .on_click(cx.listener(|_, _, _, cx| {
+                                                telemetry::event!("Tender Documentation Viewed");
+                                                cx.open_url("https://tenderai.com/guide");
                                             })),
                                     )
                                     .child(
-                                        Button::new("book-onboarding", "Book Onboarding")
+                                        Button::new("schedule-demo", "Schedule a Demo")
                                             .icon(IconName::PhoneIncoming)
                                             .icon_size(IconSize::XSmall)
                                             .icon_color(Color::Muted)
                                             .icon_position(IconPosition::Start)
                                             .on_click(cx.listener(|_, _, _, cx| {
-                                                cx.open_url(BOOK_ONBOARDING);
+                                                telemetry::event!("Tender Demo Scheduled");
+                                                cx.open_url("https://tenderai.com/schedule");
                                             })),
-                                    ),
-                            ),
-                    )
-                    .child(
-                        v_container()
-                            .px_2()
-                            .gap_2()
-                            .child(
-                                h_flex()
-                                    .justify_between()
-                                    .child(
-                                        CheckboxWithLabel::new(
-                                            "enable-vim",
-                                            Label::new("Enable Vim Mode"),
-                                            if VimModeSetting::get_global(cx).0 {
-                                                ui::ToggleState::Selected
-                                            } else {
-                                                ui::ToggleState::Unselected
-                                            },
-                                            cx.listener(move |this, selection, _window, cx| {
-                                                telemetry::event!("Welcome Vim Mode Toggled");
-                                                this.update_settings::<VimModeSetting>(
-                                                    selection,
-                                                    cx,
-                                                    |setting, value| *setting = Some(value),
-                                                );
-                                            }),
-                                        )
-                                        .fill()
-                                        .elevation(ElevationIndex::ElevatedSurface),
                                     )
                                     .child(
-                                        IconButton::new("vim-mode", IconName::Info)
+                                        Button::new("tender-support", "Get Support")
+                                            .icon(IconName::Info)
                                             .icon_size(IconSize::XSmall)
                                             .icon_color(Color::Muted)
-                                            .tooltip(
-                                                Tooltip::text(
-                                                    "You can also toggle Vim Mode via the command palette or Editor Controls menu.")
-                                            ),
+                                            .icon_position(IconPosition::Start)
+                                            .on_click(cx.listener(|_, _, _, cx| {
+                                                telemetry::event!("Tender Support Accessed");
+                                                cx.open_url("https://tenderai.com/support");
+                                            })),
                                     ),
-                            )
-                            .child(
-                                CheckboxWithLabel::new(
-                                    "enable-crash",
-                                    Label::new("Send Crash Reports"),
-                                    if TelemetrySettings::get_global(cx).diagnostics {
-                                        ui::ToggleState::Selected
-                                    } else {
-                                        ui::ToggleState::Unselected
-                                    },
-                                    cx.listener(move |this, selection, _window, cx| {
-                                        telemetry::event!("Welcome Diagnostic Telemetry Toggled");
-                                        this.update_settings::<TelemetrySettings>(selection, cx, {
-                                            move |settings, value| {
-                                                settings.diagnostics = Some(value);
-                                                telemetry::event!(
-                                                    "Settings Changed",
-                                                    setting = "diagnostic telemetry",
-                                                    value
-                                                );
-                                            }
-                                        });
-                                    }),
-                                )
-                                .fill()
-                                .elevation(ElevationIndex::ElevatedSurface),
-                            )
-                            .child(
-                                CheckboxWithLabel::new(
-                                    "enable-telemetry",
-                                    Label::new("Send Telemetry"),
-                                    if TelemetrySettings::get_global(cx).metrics {
-                                        ui::ToggleState::Selected
-                                    } else {
-                                        ui::ToggleState::Unselected
-                                    },
-                                    cx.listener(move |this, selection, _window, cx| {
-                                        telemetry::event!("Welcome Metric Telemetry Toggled");
-                                        this.update_settings::<TelemetrySettings>(selection, cx, {
-                                            move |settings, value| {
-                                                settings.metrics = Some(value);
-                                                telemetry::event!(
-                                                    "Settings Changed",
-                                                    setting = "metric telemetry",
-                                                    value
-                                                );
-                                            }
-                                        });
-                                    }),
-                                )
-                                .fill()
-                                .elevation(ElevationIndex::ElevatedSurface),
                             ),
                     ),
             )

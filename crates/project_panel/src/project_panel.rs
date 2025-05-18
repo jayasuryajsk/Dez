@@ -240,7 +240,12 @@ pub fn init_settings(cx: &mut App) {
 pub fn init(cx: &mut App) {
     init_settings(cx);
 
-    cx.observe_new(|workspace: &mut Workspace, _, _| {
+    cx.observe_new(|workspace: &mut Workspace, window, cx| {
+        // Ensure left dock is open by default
+        if let Some(window) = window {
+            workspace.toggle_dock(DockPosition::Left, window, cx);
+        }
+        
         workspace.register_action(|workspace, _: &ToggleFocus, window, cx| {
             workspace.toggle_panel_focus::<ProjectPanel>(window, cx);
         });
@@ -4991,13 +4996,8 @@ impl Panel for ProjectPanel {
         "Project Panel"
     }
 
-    fn starts_open(&self, _: &Window, cx: &App) -> bool {
-        let project = &self.project.read(cx);
-        project.visible_worktrees(cx).any(|tree| {
-            tree.read(cx)
-                .root_entry()
-                .map_or(false, |entry| entry.is_dir())
-        })
+    fn starts_open(&self, _: &Window, _cx: &App) -> bool {
+        true
     }
 
     fn activation_priority(&self) -> u32 {
