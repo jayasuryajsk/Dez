@@ -76,7 +76,7 @@ pub struct AllLanguageModelSettingsContent {
     pub ollama: Option<OllamaSettingsContent>,
     pub lmstudio: Option<LmStudioSettingsContent>,
     pub openai: Option<OpenAiSettingsContent>,
-    #[serde(rename = "zed.dev")]
+    #[serde(rename = "tenderai.com")]
     pub zed_dot_dev: Option<ZedDotDevSettingsContent>,
     pub google: Option<GoogleSettingsContent>,
     pub deepseek: Option<DeepseekSettingsContent>,

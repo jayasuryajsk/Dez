@@ -153,10 +153,10 @@ impl ReleaseChannel {
     /// This also has to match the bundle identifier for Zed on macOS.
     pub fn app_id(&self) -> &'static str {
         match self {
-            ReleaseChannel::Dev => "dev.zed.Zed-Dev",
-            ReleaseChannel::Nightly => "dev.zed.Zed-Nightly",
-            ReleaseChannel::Preview => "dev.zed.Zed-Preview",
-            ReleaseChannel::Stable => "dev.zed.Zed",
+            ReleaseChannel::Dev => "com.tenderai.TenderAI-Dev",
+            ReleaseChannel::Nightly => "com.tenderai.TenderAI-Nightly",
+            ReleaseChannel::Preview => "com.tenderai.TenderAI-Preview",
+            ReleaseChannel::Stable => "com.tenderai.TenderAI",
         }
     }
 

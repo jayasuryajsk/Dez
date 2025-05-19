@@ -37,7 +37,7 @@ pub use crate::request::*;
 pub use crate::role::*;
 pub use crate::telemetry::*;
 
-pub const ZED_CLOUD_PROVIDER_ID: &str = "zed.dev";
+pub const ZED_CLOUD_PROVIDER_ID: &str = "tenderai.com";
 
 pub fn init(client: Arc<Client>, cx: &mut App) {
     init_settings(cx);

@@ -2787,7 +2787,7 @@ impl AssistantContext {
                 let mut new_path;
                 loop {
                     new_path = contexts_dir().join(&format!(
-                        "{} - {}.zed.json",
+                        "{} - {}.tenderai.json",
                         summary.trim(),
                         discriminant
                     ));
