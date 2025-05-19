@@ -112,6 +112,38 @@ You can see the [build script](https://github.com/msys2/MINGW-packages/blob/mast
 
 Note that `collab` is not supported for MSYS2.
 
+## Notes for packaging Zed
+
+If you need to distribute a Windows build of Zed, you can create a signed
+installer using our packaging script.
+
+### Building the installer
+
+1. Build Zed in release mode:
+
+   ```powershell
+   cargo build --release
+   ```
+
+2. Run the packaging script to create `ZedSetup.exe`:
+
+   ```powershell
+   script\package-windows.ps1
+   ```
+
+   The installer will be written to `target\release\ZedSetup.exe` and installs
+   Zed into `%LOCALAPPDATA%\Programs\Zed`.
+
+### Troubleshooting the installer
+
+- **Execution policy errors** – If PowerShell blocks the script, run
+  `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` and execute the
+  script again.
+- **Missing Visual C++ runtime** – Install the latest Microsoft Visual C++
+  Redistributable if Zed fails to start after installation.
+- **Permission denied** – Run the packaging script or installer from an
+  elevated prompt if it cannot write to the installation directory.
+
 ## Troubleshooting
 
 ### Setting `RUSTFLAGS` env var breaks builds

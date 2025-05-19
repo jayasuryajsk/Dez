@@ -43,7 +43,13 @@ Zed requires a Vulkan 1.3 driver, and the following desktop portals:
 
 ## Windows
 
-Not yet available as an official download. Can be built [from source](./development/windows.md).
+Install Zed on Windows using our PowerShell script:
+
+```powershell
+irm https://zed.dev/install.ps1 | iex
+```
+
+To install the preview build, set `$env:ZED_CHANNEL="preview"` before running the script.
 
 ## Web
 
