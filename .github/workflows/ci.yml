@@ -714,6 +714,60 @@ jobs:
             target/zed-remote-server-linux-aarch64.gz
             target/release/zed-linux-aarch64.tar.gz
         env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  bundle-windows:
+    timeout-minutes: 60
+    name: Windows release bundle
+    runs-on: windows-2025-16
+    if: |
+      startsWith(github.ref, 'refs/tags/v')
+      || contains(github.event.pull_request.labels.*.name, 'run-bundling')
+    needs: [windows_tests]
+    steps:
+      - name: Enable longer pathnames for git
+        run: git config --system core.longpaths true
+
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          # Fetch history for release notes generation
+          fetch-depth: 25
+          clean: false
+          ref: ${{ github.ref }}
+
+      - name: Create Dev Drive using ReFS
+        run: ./script/setup-dev-driver.ps1
+
+      - name: Copy Git Repo to Dev Drive
+        run: |
+          Copy-Item -Path "${{ github.workspace }}" -Destination "${{ env.ZED_WORKSPACE }}" -Recurse
+
+      - name: Configure CI
+        run: |
+          mkdir -p ${{ env.CARGO_HOME }} -ErrorAction Ignore
+          cp ./.cargo/ci-config.toml ${{ env.CARGO_HOME }}/config.toml
+
+      - name: Build Windows bundle
+        working-directory: ${{ env.ZED_WORKSPACE }}
+        run: script/bundle-windows
+
+      - name: Upload app bundle to workflow run if main branch or specific label
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ github.ref == 'refs/heads/main' }} || contains(github.event.pull_request.labels.*.name, 'run-bundling') }}
+        with:
+          name: Zed_${{ github.event.pull_request.head.sha || github.sha }}-windows.zip
+          path: ${{ env.ZED_WORKSPACE }}/target/release/Zed-windows.zip
+
+      - uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        name: Upload app bundle to release
+        if: ${{ env.RELEASE_CHANNEL == 'preview' || env.RELEASE_CHANNEL == 'stable' }}
+        with:
+          draft: true
+          prerelease: ${{ env.RELEASE_CHANNEL == 'preview' }}
+          files: |
+            ${{ env.ZED_WORKSPACE }}/target/release/Zed-windows.zip
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   nix-build:
