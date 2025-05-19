@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+source "$(dirname "$0")/lib/blob-store.sh"
+
+help_info() {
+  echo "Usage: ${0##*/} [options]
+Build a release .zip bundle for Windows.
+
+Options:
+  -h    Display this help and exit.
+  "
+}
+
+while getopts 'h' flag; do
+  case "${flag}" in
+    h)
+      help_info
+      exit 0
+      ;;
+  esac
+done
+
+export ZED_BUNDLE=true
+
+channel=$(<crates/zed/RELEASE_CHANNEL)
+target_dir="${CARGO_TARGET_DIR:-target}"
+
+version="$(script/get-crate-version zed)"
+# Set RELEASE_VERSION so it's compiled into GPUI and it knows about the version.
+export RELEASE_VERSION="${version}"
+commit=$(git rev-parse HEAD | cut -c 1-7)
+
+windows_triple="x86_64-pc-windows-msvc"
+remote_server_triple="${REMOTE_SERVER_TARGET:-x86_64-unknown-linux-musl}"
+
+# Generate the licenses first, so they can be baked into the binaries
+script/generate-licenses
+
+# Build the editor and CLI for Windows
+cargo build --release --package zed --package cli --target "$windows_triple"
+
+# Build remote_server for Linux so Windows users can host remote sessions
+if [[ "$remote_server_triple" == *"musl"* ]]; then
+  export RUSTFLAGS="${RUSTFLAGS:-} -C target-feature=+crt-static"
+fi
+cargo build --release --target "$remote_server_triple" --package remote_server
+
+suffix=""
+if [[ "$channel" != "stable" ]]; then
+  suffix="-$channel"
+fi
+
+temp_dir=$(mktemp -d)
+zed_dir="${temp_dir}/zed${suffix}"
+
+mkdir -p "${zed_dir}/bin" "${zed_dir}/libexec"
+cp "${target_dir}/${windows_triple}/release/zed.exe" "${zed_dir}/libexec/zed-editor.exe"
+cp "${target_dir}/${windows_triple}/release/cli.exe" "${zed_dir}/bin/zed.exe"
+
+# Copy generated licenses and version information
+cp assets/licenses.md "${zed_dir}/licenses.md"
+echo "${version} (${commit})" > "${zed_dir}/version.txt"
+
+arch="x86_64"
+target="windows-${arch}"
+if [[ "$channel" == "dev" ]]; then
+  archive="zed-${commit}-${target}.zip"
+else
+  archive="zed-${target}.zip"
+fi
+
+rm -f "${target_dir}/release/$archive"
+(
+  cd "$temp_dir"
+  zip -r "${target_dir}/release/$archive" "$(basename "$zed_dir")"
+)
+
+remote_arch="${remote_server_triple%%-*}"
+gzip -f --stdout --best "${target_dir}/${remote_server_triple}/release/remote_server" > "${target_dir}/zed-remote-server-linux-${remote_arch}.gz"
+
+
