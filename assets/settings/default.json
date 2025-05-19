@@ -1638,8 +1638,8 @@
     "cursor_shape": {}
   },
   // The server to connect to. If the environment variable
-  // ZED_SERVER_URL is set, it will override this setting.
-  "server_url": "https://tenderai.com",
+  // TENDERWRITER_SERVER_URL is set, it will override this setting.
+  "server_url": "https://tenderwriter.com",
   // Settings overrides to use when using Zed Preview.
   // Mostly useful for developers who are managing multiple instances of Zed.
   "preview": {

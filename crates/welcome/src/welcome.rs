@@ -28,8 +28,8 @@ mod welcome_ui;
 actions!(welcome, [ResetHints]);
 
 pub const FIRST_OPEN: &str = "first_open";
-pub const DOCS_URL: &str = "https://tenderai.com/docs/";
-const BOOK_ONBOARDING: &str = "https://tenderai.com/onboarding";
+pub const DOCS_URL: &str = "https://tenderwriter.com/docs/";
+const BOOK_ONBOARDING: &str = "https://tenderwriter.com/onboarding";
 
 pub fn init(cx: &mut App) {
     BaseKeymap::register(cx);
@@ -112,7 +112,7 @@ impl Render for WelcomePage {
                                 h_flex()
                                     .w_full()
                                     .justify_center()
-                                    .child(Headline::new("Welcome to TenderAI")),
+                                    .child(Headline::new("Welcome to TenderWriter")),
                             )
                             .child(
                                 h_flex().w_full().justify_center().child(
@@ -223,7 +223,7 @@ impl Render for WelcomePage {
                                             .icon_position(IconPosition::Start)
                                             .on_click(cx.listener(|_, _, _, cx| {
                                                 telemetry::event!("Tender Templates Viewed");
-                                                cx.open_url("https://tenderai.com/templates");
+                                                cx.open_url("https://tenderwriter.com/templates");
                                             })),
                                     )
                                     .child(
@@ -234,7 +234,7 @@ impl Render for WelcomePage {
                                             .icon_position(IconPosition::Start)
                                             .on_click(cx.listener(|_, _, _, cx| {
                                                 telemetry::event!("Tender Documentation Viewed");
-                                                cx.open_url("https://tenderai.com/guide");
+                                                cx.open_url("https://tenderwriter.com/guide");
                                             })),
                                     )
                                     .child(
@@ -245,7 +245,7 @@ impl Render for WelcomePage {
                                             .icon_position(IconPosition::Start)
                                             .on_click(cx.listener(|_, _, _, cx| {
                                                 telemetry::event!("Tender Demo Scheduled");
-                                                cx.open_url("https://tenderai.com/schedule");
+                                                cx.open_url("https://tenderwriter.com/schedule");
                                             })),
                                     )
                                     .child(
@@ -256,7 +256,7 @@ impl Render for WelcomePage {
                                             .icon_position(IconPosition::Start)
                                             .on_click(cx.listener(|_, _, _, cx| {
                                                 telemetry::event!("Tender Support Accessed");
-                                                cx.open_url("https://tenderai.com/support");
+                                                cx.open_url("https://tenderwriter.com/support");
                                             })),
                                     ),
                             ),

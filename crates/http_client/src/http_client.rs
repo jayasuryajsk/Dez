@@ -214,8 +214,8 @@ impl HttpClientWithUrl {
         let base_url = self.base_url();
         let base_api_url = match base_url.as_ref() {
             "https://zed.dev" => "https://api.zed.dev",
-            "https://staging.tenderai.com" => "https://api-staging.tenderai.com",
-            "https://tenderai.com" => "https://api.tenderai.com",
+            "https://staging.tenderwriter.com" => "https://api-staging.tenderwriter.com",
+            "https://tenderwriter.com" => "https://api.tenderwriter.com",
             "http://localhost:3000" => "http://localhost:8080",
             other => other,
         };
@@ -231,8 +231,8 @@ impl HttpClientWithUrl {
         let base_url = self.base_url();
         let base_api_url = match base_url.as_ref() {
             "https://zed.dev" => "https://llm.zed.dev",
-            "https://staging.tenderai.com" => "https://llm-staging.tenderai.com",
-            "https://tenderai.com" => "https://llm.tenderai.com",
+            "https://staging.tenderwriter.com" => "https://llm-staging.tenderwriter.com",
+            "https://tenderwriter.com" => "https://llm.tenderwriter.com",
             "http://localhost:3000" => "http://localhost:8787",
             other => other,
         };

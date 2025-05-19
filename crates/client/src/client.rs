@@ -55,8 +55,8 @@ pub use rpc::*;
 pub use telemetry_events::Event;
 pub use user::*;
 
-static ZED_SERVER_URL: LazyLock<Option<String>> =
-    LazyLock::new(|| std::env::var("ZED_SERVER_URL").ok());
+static TENDERWRITER_SERVER_URL: LazyLock<Option<String>> =
+    LazyLock::new(|| std::env::var("TENDERWRITER_SERVER_URL").ok());
 static ZED_RPC_URL: LazyLock<Option<String>> = LazyLock::new(|| std::env::var("ZED_RPC_URL").ok());
 
 pub static IMPERSONATE_LOGIN: LazyLock<Option<String>> = LazyLock::new(|| {
@@ -100,7 +100,7 @@ impl Settings for ClientSettings {
 
     fn load(sources: SettingsSources<Self::FileContent>, _: &mut App) -> Result<Self> {
         let mut result = sources.json_merge::<Self>()?;
-        if let Some(server_url) = &*ZED_SERVER_URL {
+        if let Some(server_url) = &*TENDERWRITER_SERVER_URL {
             result.server_url.clone_from(server_url)
         }
         Ok(result)
