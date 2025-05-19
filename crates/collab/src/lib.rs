@@ -193,8 +193,8 @@ impl Config {
     pub fn zed_dot_dev_url(&self) -> &str {
         match self.zed_environment.as_ref() {
             "development" => "http://localhost:3000",
-            "staging" => "https://staging.tenderai.com",
-            _ => "https://tenderai.com",
+            "staging" => "https://staging.tenderwriter.com",
+            _ => "https://tenderwriter.com",
         }
     }
 

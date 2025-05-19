@@ -52,7 +52,7 @@ impl State {
     }
 }
 
-pub const ZED_WEB_SEARCH_PROVIDER_ID: &'static str = "tenderai.com";
+pub const ZED_WEB_SEARCH_PROVIDER_ID: &'static str = "tenderwriter.com";
 
 impl WebSearchProvider for CloudWebSearchProvider {
     fn id(&self) -> WebSearchProviderId {

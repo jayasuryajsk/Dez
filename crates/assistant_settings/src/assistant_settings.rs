@@ -42,8 +42,8 @@ pub enum NotifyWhenAgentWaiting {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(tag = "name", rename_all = "snake_case")]
 pub enum AssistantProviderContentV1 {
-    #[serde(rename = "tenderai.com")]
-    TenderAI { default_model: Option<CloudModel> },
+    #[serde(rename = "tenderwriter.com")]
+    TenderWriter { default_model: Option<CloudModel> },
     #[serde(rename = "openai")]
     OpenAi {
         default_model: Option<OpenAiModel>,
@@ -211,9 +211,9 @@ impl AssistantSettingsContent {
                         .provider
                         .clone()
                         .and_then(|provider| match provider {
-                            AssistantProviderContentV1::TenderAI { default_model } => {
+                            AssistantProviderContentV1::TenderWriter { default_model } => {
                                 default_model.map(|model| LanguageModelSelection {
-                                    provider: "tenderai.com".into(),
+                                    provider: "tenderwriter.com".into(),
                                     model: model.id().to_string(),
                                 })
                             }
@@ -327,8 +327,8 @@ impl AssistantSettingsContent {
             Some(AssistantSettingsContentInner::Versioned(settings)) => match **settings {
                 VersionedAssistantSettingsContent::V1(ref mut settings) => {
                     match provider.as_ref() {
-                        "tenderai.com" => {
-                            log::warn!("attempted to set tenderai.com model on outdated settings");
+                        "tenderwriter.com" => {
+                            log::warn!("attempted to set tenderwriter.com model on outdated settings");
                         }
                         "anthropic" => {
                             let api_url = match &settings.provider {
@@ -686,7 +686,7 @@ impl JsonSchema for LanguageModelProviderSetting {
                 "lmstudio".into(),
                 "ollama".into(),
                 "openai".into(),
-                "tenderai.com".into(),
+                "tenderwriter.com".into(),
                 "copilot_chat".into(),
                 "deepseek".into(),
             ]),
@@ -757,7 +757,7 @@ pub struct AssistantSettingsContentV1 {
     default_height: Option<f32>,
     /// The provider of the assistant service.
     ///
-    /// This can be "openai", "anthropic", "ollama", "lmstudio", "deepseek", "tenderai.com"
+    /// This can be "openai", "anthropic", "ollama", "lmstudio", "deepseek", "tenderwriter.com"
     /// each with their respective default models and configurations.
     provider: Option<AssistantProviderContentV1>,
 }
@@ -952,7 +952,7 @@ mod tests {
             assert_eq!(
                 AssistantSettings::get_global(cx).default_model,
                 LanguageModelSelection {
-                    provider: "tenderai.com".into(),
+                    provider: "tenderwriter.com".into(),
                     model: "claude-3-7-sonnet-latest".into(),
                 }
             );
@@ -1023,7 +1023,7 @@ mod tests {
                 "enabled": true,
                 "version": "2",
                 "default_model": {
-                  "provider": "tenderai.com",
+                  "provider": "tenderwriter.com",
                   "model": "gpt-99"
                 },
             }}"#;
